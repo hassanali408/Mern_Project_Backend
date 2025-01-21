@@ -1,6 +1,7 @@
 const { ChatOpenAI } = require('@langchain/openai');  
 const { ChatPromptTemplate } = require('@langchain/core/prompts');  
 const { validationResult } = require('express-validator'); 
+const sanitizeHtml = require('sanitize-html');
 
 const Story = require('../models/Story'); 
 
@@ -36,12 +37,16 @@ async function createStory(req, res) {
   }
 
   const { prompt } = req.body;  
+  const sanitizedPrompt = sanitizeHtml(prompt);
   const user = req.user.userId; 
   
   try {
-    const story = await generateStory(prompt);
+    const story = await generateStory(sanitizedPrompt);
 
-    const newStory = new Story({ prompt, story,user });
+    const newStory = new Story({
+       prompt:sanitizedPrompt,
+       story : sanitizeHtml(story),
+       user });
     await newStory.save();
 
     res.status(200).json({ story });

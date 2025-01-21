@@ -1,12 +1,16 @@
 const Category = require('../models/Category');
 const Car = require('../models/Cars');
 const mongoose = require('mongoose');
+const sanitizeHtml = require('sanitize-html');
 
 const createCategory = async (req, res) => {
   try {
     const { name } = req.body;
     const user = req.user.userId;
-    const category = new Category({ name,user });
+    const category = new Category({
+      name: sanitizeHtml(name),
+      user
+    });
     await category.save();
     res.status(201).json(category);
   } catch (err) {
@@ -43,14 +47,13 @@ const getCategories = async (req, res) => {
 
 const updateCategory = async (req, res) => {
   try {
-    const { name } = req.body;   const userId = req.user.userId; 
-  
+    const { name } = req.body; const userId = req.user.userId;
+
     const category = await Category.findOne({ _id: req.params.id, user: userId });
-    if (!category) 
-    return res.status(404).json({ message: 'Category not found or you are not authorized to update it' });
+    if (!category)
+      return res.status(404).json({ message: 'Category not found or you are not authorized to update it' });
 
-    category.name = name || category.name;
-
+    category.name = name ? sanitizeHtml(name) : category.name;
     await category.save();
     res.status(200).json(category);
   } catch (err) {
@@ -65,7 +68,7 @@ const deleteCategory = async (req, res) => {
     const isCategoryInUse = await Car.findOne({ category: categoryId });
 
     if (isCategoryInUse) {
-      return res.status(400).json({ message: 'Cannot delete category, it is linked to one or more cars',status:"invalid" });
+      return res.status(400).json({ message: 'Cannot delete category, it is linked to one or more cars', status: "invalid" });
     }
     const category = await Category.findByIdAndDelete(req.params.id);
     if (!category) return res.status(404).json({ message: 'Category not found' });
@@ -76,4 +79,4 @@ const deleteCategory = async (req, res) => {
 };
 
 
-module.exports = { createCategory,getCategories,updateCategory,deleteCategory };
+module.exports = { createCategory, getCategories, updateCategory, deleteCategory };

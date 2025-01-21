@@ -1,11 +1,20 @@
 const Car = require('../models/Cars');
 const Category = require('../models/Category');
+const sanitizeHtml = require('sanitize-html');
 
 const createCar = async (req, res) => {
   const { model, make, color, registrationNo, category } = req.body;
   const user = req.user.userId;
+
   try {
-    const car = new Car({ model, make, color, registrationNo, category, user });
+    const car = new Car({
+      model: sanitizeHtml(model),
+      make: sanitizeHtml(make),
+      color: sanitizeHtml(color),
+      registrationNo: sanitizeHtml(registrationNo),
+      category: sanitizeHtml(category),
+      user,
+    });
     await car.save();
     res.status(201).json(car);
   } catch (err) {
@@ -17,8 +26,8 @@ const getCars = async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    const page = parseInt(req.query.page) || 1; 
-    const limit = parseInt(req.query.limit) || 10; 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
     const cars = await Car.find({ user: userId })
@@ -50,11 +59,14 @@ const updateCar = async (req, res) => {
         .status(404)
         .json({ message: 'Car not found or you are not authorized to update it' });
 
-    car.model = model || car.model;
-    car.make = make || car.make;
-    car.color = color || car.color;
-    car.registrationNo = registrationNo || car.registrationNo;
-    car.category = categoryId || car.category;
+    car.model = model ? sanitizeHtml(model) : car.model;
+    car.make = make ? sanitizeHtml(make) : car.make;
+    car.color = color ? sanitizeHtml(color) : car.color;
+    car.registrationNo = registrationNo ? sanitizeHtml(registrationNo) : car.registrationNo;
+    car.category = categoryId ? sanitizeHtml(categoryId) : car.category;
+
+    await car.save();
+    res.status(200).json(car);
 
     await car.save();
     res.status(200).json(car);
