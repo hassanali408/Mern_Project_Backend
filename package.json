@@ -27,7 +27,8 @@
     "mongoose": "^8.9.5",
     "nodemailer": "^6.9.16",
     "openai": "^4.79.1",
-    "sanitize-html": "^2.14.0"
+    "sanitize-html": "^2.14.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

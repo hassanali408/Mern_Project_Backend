@@ -1,14 +1,9 @@
-const { ChatOpenAI } = require('@langchain/openai');  
 const { ChatPromptTemplate } = require('@langchain/core/prompts');  
 const { validationResult } = require('express-validator'); 
 const sanitizeHtml = require('sanitize-html');
-
 const Story = require('../models/Story'); 
+const { openAI } = require('../config/openAIConfig');
 
-const openAI = new ChatOpenAI({
-  model: "gpt-4o-mini",  
-  openai_api_key: process.env.OPENAI_API_KEY,  
-});
 
 async function generateStory(prompt) {
   try {
