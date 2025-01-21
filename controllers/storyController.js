@@ -53,12 +53,28 @@ async function createStory(req, res) {
 
 async function getStories(req, res) {
   try {
-    const userId = req.user.userId; 
-    const stories = await Story.find({ user: userId });
-    res.status(200).json(stories);
+    const userId = req.user.userId;
+
+    const page = parseInt(req.query.page) || 1; 
+    const limit = parseInt(req.query.limit) || 10; 
+    const skip = (page - 1) * limit;
+
+    const stories = await Story.find({ user: userId })
+      .skip(skip)
+      .limit(limit);
+
+    const totalStories = await Story.countDocuments({ user: userId });
+
+    res.status(200).json({
+      totalStories,
+      currentPage: page,
+      totalPages: Math.ceil(totalStories / limit),
+      stories,
+    });
   } catch (err) {
-    res.status(500).json({ error: "Error fetching stories" });
+    res.status(500).json({ error: "Error fetching stories", details: err.message });
   }
 }
+
 
 module.exports = { createStory, getStories };

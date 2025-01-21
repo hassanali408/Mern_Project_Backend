@@ -17,13 +17,29 @@ const createCategory = async (req, res) => {
 
 const getCategories = async (req, res) => {
   try {
-    const userId = req.user.userId; 
-    const categories = await Category.find({ user: userId });
-    res.status(200).json(categories);
+    const userId = req.user.userId;
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const categories = await Category.find({ user: userId })
+      .skip(skip)
+      .limit(limit);
+
+    const totalCategories = await Category.countDocuments({ user: userId });
+
+    res.status(200).json({
+      totalCategories,
+      currentPage: page,
+      totalPages: Math.ceil(totalCategories / limit),
+      categories,
+    });
   } catch (err) {
     res.status(500).json({ message: 'Error fetching categories', error: err.message });
   }
 };
+
 
 const updateCategory = async (req, res) => {
   try {
