@@ -85,5 +85,20 @@ const logout = async (req, res) => {
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
+const validateToken = async (req, res) => {
+  const { token } = req.body;
 
-module.exports = { signup, login,logout };
+  if (!token) {
+      return res.status(400).json({ success: false, message: 'Token is required' });
+  }
+
+  try {
+      const decoded = jwt.verify(token,  process.env.JWT_SECRET);
+      
+      return res.status(200).json({ success: true, message: 'Token is valid', data: decoded,status:"ok" });
+  } catch (err) {
+      return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+  }
+};
+
+module.exports = { signup, login,logout,validateToken };
